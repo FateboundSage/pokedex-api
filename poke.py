@@ -33,7 +33,7 @@ def weakness_and_counters(name, threshold=2.0, counters_per_type=2):
     'Against Steel', 'Against Fairy'
     ]
     type_map = {c: c.replace('Against ', '') for c in against_cols}
-
+    # type_map just cleans the names: "Against Fire" → "Fire"
     # 1. Find the Pokémon row
     mask = pokedex['Name'].str.lower() == name.lower()
     if not mask.any():

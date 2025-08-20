@@ -15,7 +15,7 @@ def legends():
 
 @app.route('/strength')
 def powers():
-    pokemon = request.form.get("Name")
+    pokemon = request.args.get("Name")
     pokemon_stats = poke.stats(pokemon)
     return pokemon_stats
 
