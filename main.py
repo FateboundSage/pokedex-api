@@ -3,10 +3,6 @@ import json
 app = Flask(__name__)
 import poke
 
-@app.route('/')
-def index():
-    return render_template('index.html')
-
 @app.route('/pokedex')
 def pokedex():
     pokedex = poke.pokedex()
@@ -38,7 +34,8 @@ def evolution_chain(name):
 
 @app.route('/weakness/<name>')
 def weakness(name):
-    weaknesses, counters = poke.weakness_and_counters(name) 
+    name = request.args.get("name")
+    weaknesses, counters = poke.weakness_and_counters(name=name)
     return {
         'weaknesses': weaknesses,
         'counter_pokemons': counters
@@ -46,7 +43,7 @@ def weakness(name):
 
 @app.route('/leaderboard/<stat>')
 def leaderboard(stat):
-    top_pokemon = poke.leaderboard(stat)  # Should return a list/dict of top Pokémon
+    top_pokemon = poke.leaderboard()
     return top_pokemon
 
 app.run(debug=True)
