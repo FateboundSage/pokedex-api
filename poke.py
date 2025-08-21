@@ -1,6 +1,7 @@
 import pandas as pd 
 import json
 data = pd.read_csv('d:/vs code/ml/projects/project_2/All_Pokemon.csv')
+evolution_data = pd.read_csv('d:/vs code/ml/projects/project_2/Pokemon_Evolution_Database.csv')
 
 def pokedex():
     pokedex = data[['Name','Type 1','Type 2','Abilities','Generation','Final Evolution','Catch Rate','Legendary','Mega Evolution']]
@@ -11,11 +12,14 @@ def legends():
     legendary = pokedex[data['Legendary']==1]
     return legendary.to_json(orient='records')
 
-def stats(pokemon):
+def stats(pokemon: str):
     pokemon_stats = data[['Name','Abilities','HP','Att','Spa','Spd','BST','Mean']]
-    pokemon_stats['pokemon']
-    pokemon_stats.set_index('Name')
-    return pokemon_stats.to_json(orient='records')
+    
+    row = pokemon_stats[pokemon_stats['Name'].str.lower() == pokemon.lower()]
+    if row.empty:
+        return None
+    # else return a single record as dictionary
+    return row.iloc[0].to_dict()
 
 def leaderboard():
     pokemon_stats = data[['Name','Abilities','HP','Att','Spa','Spd','BST','Mean']]
@@ -63,32 +67,21 @@ def weakness_and_counters(name, threshold=2.0, counters_per_type=2):
         "weaknesses": weaknesses,
         "counter_pokemons": counters
     }
-    return json.dumps(poke_weakness)
+    return poke_weakness
 
 def evolution_chain(name):
-    # Normalize name for search
-    name = name.lower()
-    # Find entry for queried pokemon
-    poke_row = data[data['Name'].str.lower() == name]
-    if poke_row.empty:
-        return {"error": "Pokémon not found"}
+    poke_data = evolution_data[evolution_data['Name'].str.lower() == name.lower()]
+    if poke_data.empty:
+        return None
+    return poke_data.iloc[0].to_dict()
 
-    number = poke_row['Number'].iloc[0]
+def get_image_url(name):
+    search = name.lower().strip().replace('-',' ')
+    matches = data[data['Name'].str.lower() == search]
 
-    # Find all Pokémon with this number (forms)
-    forms = data[data['Number'] == number]
-    
-    # Now, try to get pre-evo and next-evo by searching for consecutive numbers
-    pre_evo = data[data['Number'] == number-1]
-    evo = data[data['Number'] == number+1]
-
-    # Build output: previous stage(s), forms, next stage(s)
-    chain = []
-    for _, row in pre_evo.iterrows():
-        chain.append({"Name": row['Name'], "Form": row.get('Form', 'Normal')})
-    for _, row in forms.iterrows():
-        chain.append({"Name": row['Name'], "Form": row.get('Form', 'Normal')})
-    for _, row in evo.iterrows():
-        chain.append({"Name": row['Name'], "Form": row.get('Form', 'Normal')})
-    evolution = {"evolution_family": chain}
-    return json.dumps(evolution)
+    if not matches.empty:
+        number = matches.iloc[0]['Number']
+        # as the pokeAPI uses the National Dex number
+        url = f"https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/{number}.png"
+        return url
+    return None
