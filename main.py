@@ -1,4 +1,5 @@
-from flask import Flask,render_template,request,jsonify
+from flask import Flask,render_template,request,jsonify,redirect
+import requests
 import json
 app = Flask(__name__)
 import poke
@@ -50,5 +51,6 @@ def leaderboard():
 @app.route('/pokemon/<name>/image')
 def get_pokemon_image(name):
     url = poke.get_image_url(name)
-    return jsonify({'name':name,'image_url':url})
+    return redirect(url) #type: ignore
+
 app.run(debug=True)
